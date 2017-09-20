@@ -35,6 +35,10 @@ namespace NS_Selidar
   SelidarApplication::~SelidarApplication ()
   {
     scan_count = 0;
+
+    running = false;
+    scan_thread.join ();
+
     delete publisher;
   }
   
