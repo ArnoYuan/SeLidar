@@ -377,6 +377,8 @@ namespace NS_Selidar
     int ans;
     memset (local_scan, 0, sizeof(local_scan));
     
+    bool got_start_range = false;
+
     while (scanning)
     {
       unsigned short range;
@@ -388,17 +390,20 @@ namespace NS_Selidar
           return Timeout;
         }
       }
+
       boost::mutex::scoped_lock auto_lock (rxtx_lock);
 
       if (range == SELIDAR_START_RANGES)
       {
         cached_scan_node_count = 0;
+        got_start_range = true;
       }
       
       if (cached_scan_node_count >= 2048)
       {
-        scanning = false;
-        return Failure;
+    	printf ("Too many nodes to got! enter next loop!\n");
+    	cached_scan_node_count = 0;
+        continue;
       }
       
       for (int i = 0; i < count; i++)
@@ -406,10 +411,18 @@ namespace NS_Selidar
         cached_scan_node_buf[cached_scan_node_count++] = local_buf[i];
       }
       
+      if (range == SELIDAR_MIDDLE_RANGES && !got_start_range)
+      {
+        cached_scan_node_count = 0;
+        data_cond.set();
+      }
+
       if (range == SELIDAR_END_RANGES)
       {
+        got_start_range = false;
         data_cond.set ();
       }
+
     }
     scanning = false;
     return Success;
@@ -426,12 +439,13 @@ namespace NS_Selidar
     
     // waiting for confirmation
     SelidarPacketHead response_header;
+
     if (IS_FAIL(ans = waitResponseHeader (&response_header, timeout)))
     {
       printf ("get response header fail!\n");
       return ans;
     }
-    
+
     if (response_header.cmd.cmd_word != StartScanRep)
     {
       printf ("command word fail!\n");
@@ -445,13 +459,13 @@ namespace NS_Selidar
     
     //discard first packet
     size_t data_size = response_header.length - sizeof(SelidarPacketHead);
-    
+
     if (rxtx->waitfordata (data_size, timeout) != Serial::ANS_OK)
     {
       printf ("wait data timeout!\n");
       return Timeout;
     }
-    
+
     unsigned char scan_data[1024] = { 0 };
     
     if (rxtx->recvdata (scan_data, data_size) <= 0)
@@ -459,7 +473,7 @@ namespace NS_Selidar
       printf ("receive data fail!\n");
       return Failure;
     }
-    
+
     for (size_t i = 0; i < data_size - 1; i++)
     {
       checksum ^= scan_data[i];
@@ -475,7 +489,7 @@ namespace NS_Selidar
     
     memcpy (&angle_range, scan_data, sizeof(angle_range));
     data_pos += sizeof(angle_range);
-    
+
     node_count = (data_size - 2 - 2 - 1) / 2;
     
     unsigned short start_angle;
