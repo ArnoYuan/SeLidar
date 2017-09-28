@@ -204,22 +204,28 @@ namespace NS_Selidar
       int ans = rxtx->waitfordata (remainSize, timeout - waitTime, &recvSize);
       if (ans == Serial::ANS_DEV_ERR)
       {
+        printf ("device error!\n");
         return Failure;
       }
       else if (ans == Serial::ANS_TIMEOUT)
       {
+    	printf ("wait timeout!\n");
         return Timeout;
       }
       
       if (recvSize > remainSize)
         recvSize = remainSize;
       
-      rxtx->recvdata (recvBuffer, recvSize);
+      if (rxtx->recvdata (recvBuffer, recvSize) <= 0)
+      {
+    	  printf ("receive data fail!\n");
+    	  return Failure;
+      }
       
       for (size_t pos = 0; pos < recvSize; ++pos)
       {
         unsigned char currentByte = recvBuffer[pos];
-        
+
         if (recvPos == 0)
         {
           if (currentByte != SELIDAR_CMD_SYNC_BYTE)
@@ -232,6 +238,7 @@ namespace NS_Selidar
         }
       }
     }
+    printf ("device timeout!\n");
     return Timeout;
   }
   
@@ -382,6 +389,7 @@ namespace NS_Selidar
         }
       }
       boost::mutex::scoped_lock auto_lock (rxtx_lock);
+
       if (range == SELIDAR_START_RANGES)
       {
         cached_scan_node_count = 0;
@@ -420,11 +428,13 @@ namespace NS_Selidar
     SelidarPacketHead response_header;
     if (IS_FAIL(ans = waitResponseHeader (&response_header, timeout)))
     {
+      printf ("get response header fail!\n");
       return ans;
     }
     
     if (response_header.cmd.cmd_word != StartScanRep)
     {
+      printf ("command word fail!\n");
       return Invalid;
     }
     
@@ -438,12 +448,17 @@ namespace NS_Selidar
     
     if (rxtx->waitfordata (data_size, timeout) != Serial::ANS_OK)
     {
+      printf ("wait data timeout!\n");
       return Timeout;
     }
     
     unsigned char scan_data[1024] = { 0 };
     
-    rxtx->recvdata (scan_data, data_size);
+    if (rxtx->recvdata (scan_data, data_size) <= 0)
+    {
+      printf ("receive data fail!\n");
+      return Failure;
+    }
     
     for (size_t i = 0; i < data_size - 1; i++)
     {
@@ -452,6 +467,7 @@ namespace NS_Selidar
     
     if (checksum != scan_data[data_size - 1])
     {
+      printf ("bad data crc!\n");
       return BadCRC;
     }
     

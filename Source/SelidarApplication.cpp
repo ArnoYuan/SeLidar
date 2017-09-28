@@ -410,14 +410,7 @@ namespace NS_Selidar
     {
       return;
     }
-    NS_NaviCommon::delay (100);
 
-    service->advertise (
-        NS_NaviCommon::SERVICE_TYPE_STOP_SCAN,
-        boost::bind (&SelidarApplication::stopScanService, this, _1, _2));
-    service->advertise (
-        NS_NaviCommon::SERVICE_TYPE_START_SCAN,
-        boost::bind (&SelidarApplication::startScanService, this, _1, _2));
 #endif
 
     NS_NaviCommon::delay (100);
@@ -441,6 +434,8 @@ namespace NS_Selidar
       console.error ("Can't got first scan from LIDAR.");
       running = false;
     }
+
+    console.debug ("Got scan data from lidar!");
 
   }
   

@@ -157,7 +157,7 @@ namespace NS_Selidar
       return 0;
     
     int ans = ::read (serial_fd, data, size);
-    
+
     if (ans == -1)
       ans = 0;
     required_rx_cnt = ans;
