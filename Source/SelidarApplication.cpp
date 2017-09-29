@@ -173,7 +173,6 @@ namespace NS_Selidar
       scan_msg.angle_max =  M_PI - angle_max;
     }
 
-
     scan_msg.angle_increment = (scan_msg.angle_max - scan_msg.angle_min)
         / (double) (node_count - 1);
     
@@ -209,15 +208,16 @@ namespace NS_Selidar
           scan_msg.ranges[node_count-1-i] = read_value;
       }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////
+
     /*
+    printf ("max: %f, min: %f, increase: %f.\n", scan_msg.angle_max, scan_msg.angle_min, scan_msg.angle_increment);
+    printf ("node count: %d\n", node_count);
     for (size_t i = 0; i < node_count; i++)
     {
-      float read_value = (float) nodes[i].distance_scale_1000 / 1000.0f;
-      printf("-->%d    %f\n", i, read_value);
+    	printf ("%f,", scan_msg.ranges[i]);
     }
+    printf ("\n");
     */
-    //////////////////////////////////////////////////////////////////////////////////////
 
     publisher->publish (scan_msg);
   }
