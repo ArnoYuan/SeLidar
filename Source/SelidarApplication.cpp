@@ -209,15 +209,16 @@ namespace NS_Selidar
       }
     }
 
-    /*
+
     printf ("max: %f, min: %f, increase: %f.\n", scan_msg.angle_max, scan_msg.angle_min, scan_msg.angle_increment);
     printf ("node count: %d\n", node_count);
+
     for (size_t i = 0; i < node_count; i++)
     {
     	printf ("%f,", scan_msg.ranges[i]);
     }
     printf ("\n");
-    */
+
 
     publisher->publish (scan_msg);
   }
