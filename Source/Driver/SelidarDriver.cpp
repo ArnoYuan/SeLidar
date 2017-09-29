@@ -399,7 +399,7 @@ namespace NS_Selidar
         got_start_range = true;
       }
       
-      if (cached_scan_node_count >= 2048)
+      if (cached_scan_node_count >= MAX_SCAN_NODES)
       {
     	printf ("Too many nodes to got! enter next loop!\n");
     	cached_scan_node_count = 0;
