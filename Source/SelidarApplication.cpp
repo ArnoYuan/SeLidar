@@ -233,7 +233,7 @@ namespace NS_Selidar
     NS_NaviCommon::Time end_scan_time;
     double scan_duration;
 
-    const int buffer_size = 360 * 4;
+    const int buffer_size = 360 * 10;
     SelidarMeasurementNode nodes_buffer[buffer_size];
     SelidarMeasurementNode nodes_temp[buffer_size];
     SelidarMeasurementNode nodes_pub[buffer_size];
