@@ -370,8 +370,8 @@ namespace NS_Selidar
   int
   SelidarDriver::cacheScanData ()
   {
-    SelidarMeasurementNode local_buf[128];
-    size_t count = 128;
+    SelidarMeasurementNode local_buf[360];
+    size_t count = 360;
     SelidarMeasurementNode local_scan[MAX_SCAN_NODES];
     size_t scan_count = 0;
     int ans;
