@@ -57,7 +57,7 @@ namespace NS_Selidar
       
       rxtx->flush (0);
     }
-    
+
     connected = true;
     
     return Success;
