@@ -374,6 +374,9 @@ namespace NS_Selidar
     size_t count = 360;
     SelidarMeasurementNode local_scan[MAX_SCAN_NODES];
     size_t scan_count = 0;
+
+    size_t cached_count = 0;
+
     int ans;
     memset (local_scan, 0, sizeof(local_scan));
     
@@ -393,6 +396,10 @@ namespace NS_Selidar
 
       boost::mutex::scoped_lock auto_lock (rxtx_lock);
 
+      bool valid_scan = false;
+      bool full_range_scan = false;
+
+      /*
       if (range == SELIDAR_START_RANGES)
       {
         cached_scan_node_count = 0;
@@ -420,6 +427,53 @@ namespace NS_Selidar
       if (range == SELIDAR_END_RANGES)
       {
         got_start_range = false;
+        printf ("cache: %d\n", cached_scan_node_count);
+        data_cond.set ();
+      }
+      */
+      switch (range)
+      {
+      case SELIDAR_START_RANGES:
+    	  cached_count = 0;
+    	  got_start_range = true;
+    	  valid_scan = true;
+    	  break;
+      case SELIDAR_MIDDLE_RANGES:
+    	  if (got_start_range)
+    	  {
+    	    valid_scan = true;
+    	  }else{
+    	    valid_scan = false;
+    	    cached_count = 0;
+    	  }
+    	  break;
+      case SELIDAR_END_RANGES:
+    	  got_start_range = false;
+    	  valid_scan = true;
+    	  full_range_scan = true;
+    	  break;
+      default:
+    	  cached_count = 0;
+    	  valid_scan = false;
+    	  break;
+      }
+
+      if (valid_scan && cached_count < MAX_SCAN_NODES)
+      {
+        for (int i = 0; i < count; i++)
+		{
+		  cached_scan_node_buf[cached_count++] = local_buf[i];
+		}
+
+        if (full_range_scan)
+        {
+          printf ("cache: %d, --->%d\n", cached_count, cached_scan_node_count);
+          cached_scan_node_count = cached_count;
+          data_cond.set ();
+        }
+      }else{
+    	cached_count = 0;
+    	cached_scan_node_count = cached_count;
         data_cond.set ();
       }
 
@@ -580,6 +634,8 @@ namespace NS_Selidar
           
         boost::mutex::scoped_lock auto_lock (rxtx_lock);
         
+        printf ("grab: %d\n", cached_scan_node_count);
+
         size_t size_to_copy = min(count, cached_scan_node_count);
         
         memcpy (nodebuffer, cached_scan_node_buf,
