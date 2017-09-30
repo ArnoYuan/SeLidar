@@ -467,7 +467,6 @@ namespace NS_Selidar
 
         if (full_range_scan)
         {
-          printf ("cache: %d, --->%d\n", cached_count, cached_scan_node_count);
           cached_scan_node_count = cached_count;
           data_cond.set ();
         }
@@ -633,8 +632,6 @@ namespace NS_Selidar
           return Timeout; //consider as timeout
           
         boost::mutex::scoped_lock auto_lock (rxtx_lock);
-        
-        printf ("grab: %d\n", cached_scan_node_count);
 
         size_t size_to_copy = min(count, cached_scan_node_count);
         
