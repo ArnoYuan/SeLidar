@@ -6,23 +6,56 @@
  */
 
 #include "SelidarApplication.h"
+#include <stdlib.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 using namespace NS_Selidar;
+
+SelidarApplication* app;
+
+static void
+signalAction (int signal)
+{
+  printf ("received term signal, quitting!\n");
+  app->quit ();
+  app->terminate ();
+}
+
+void
+registerSignal ()
+{
+	//signal (SIGINT, signalAction);
+	//signal (SIGKILL, signalAction);
+	//signal (SIGQUIT, signalAction);
+	//signal (SIGTERM, signalAction);
+	signal (SIGUSR1, signalAction);
+}
 
 int
 main (int argc, char* argv[])
 {
-  SelidarApplication app;
-  
-  if (!app.initialize (argc, argv))
+  app = new SelidarApplication;
+
+  registerSignal ();
+
+  if (!app->initialize (argc, argv))
   {
-	return -1;
+	exit (EXIT_FAILURE);
+	return 0;
   }
   
-  app.run ();
+  app->run ();
   
-  app.pending ();
+  if (!app->isRunning())
+  {
+	exit (EXIT_FAILURE);
+	return 0;
+  }
+
+  app->pending ();
   
+  exit (EXIT_SUCCESS);
   return 0;
 }
 
