@@ -23,10 +23,10 @@ static void signalAction(int signal)
 
 void registerSignal()
 {
-  signal (SIGINT, signalAction);
+  //signal (SIGINT, signalAction);
   //signal (SIGKILL, signalAction);
   //signal (SIGQUIT, signalAction);
-  signal (SIGTERM, signalAction);
+  //signal (SIGTERM, signalAction);
   signal(SIGUSR1, signalAction);
 }
 
