@@ -28,8 +28,8 @@ namespace NS_Selidar
   class SelidarApplication: public Application
   {
   public:
-    SelidarApplication ();
-    ~SelidarApplication ();
+    SelidarApplication();
+    ~SelidarApplication();
   private:
     std::string serial_port;
     int serial_baudrate;
@@ -45,10 +45,10 @@ namespace NS_Selidar
     boost::condition got_first_scan_cond;
     boost::mutex scan_count_lock;
 
-    NS_DataSet::Publisher<NS_DataType::LaserScan>* publisher;
+    NS_DataSet::Publisher< NS_DataType::LaserScan >* publisher;
 
   private:
-    
+
 #ifdef DUPLEX_MODE
     bool
     checkSelidarHealth (SelidarDriver * drv);
@@ -61,22 +61,22 @@ namespace NS_Selidar
     stopScanService (NS_ServiceType::RequestBase* request,
         NS_ServiceType::ResponseBase* response);
 #endif
-    
-    void
-    loadParameters ();
 
     void
-    publishScan (SelidarMeasurementNode *nodes, size_t node_count,
-                 NS_NaviCommon::Time start, double scan_time, float angle_min,
-                 float angle_max);
+    loadParameters();
+
     void
-    scanLoop ();
+    publishScan(SelidarMeasurementNode *nodes, size_t node_count,
+                NS_NaviCommon::Time start, double scan_time, float angle_min,
+                float angle_max);
+    void
+    scanLoop();
 
   public:
     virtual void
-    run ();
+    run();
     virtual void
-    quit ();
+    quit();
   };
 }
 

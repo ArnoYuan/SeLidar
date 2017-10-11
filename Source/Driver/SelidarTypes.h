@@ -3,7 +3,7 @@
 
 namespace NS_Selidar
 {
-  
+
   enum ResultCode
   {
     BadCRC = -5,

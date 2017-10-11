@@ -8,59 +8,59 @@
 
 namespace NS_Selidar
 {
-  
+
 #define DEFAULT_TIMEOUT 2000
 #define MAX_SCAN_NODES 2048
-  
+
   class SelidarDriver
   {
   public:
-    SelidarDriver ();
+    SelidarDriver();
     virtual
-    ~SelidarDriver ();
+    ~SelidarDriver();
 
   public:
     int
-    connect (const char * port_path, unsigned int baudrate, unsigned int flag);
+    connect(const char * port_path, unsigned int baudrate, unsigned int flag);
     void
-    disconnect ();
+    disconnect();
     bool
-    isConnected ();
+    isConnected();
 
     int
-    reset (unsigned int timeout = DEFAULT_TIMEOUT);
+    reset(unsigned int timeout = DEFAULT_TIMEOUT);
     int
-    stop (unsigned int timeout = DEFAULT_TIMEOUT);
+    stop(unsigned int timeout = DEFAULT_TIMEOUT);
 
     int
-    getHealth (SelidarHealth &health_info, unsigned int timeout =
+    getHealth(SelidarHealth &health_info, unsigned int timeout =
     DEFAULT_TIMEOUT);
     int
-    getDeviceInfo (SelidarInfo &info, unsigned int timeout =
+    getDeviceInfo(SelidarInfo &info, unsigned int timeout =
     DEFAULT_TIMEOUT);
 
     int
-    startScan (unsigned int timeout = DEFAULT_TIMEOUT);
+    startScan(unsigned int timeout = DEFAULT_TIMEOUT);
 
     int
-    grabScanData (SelidarMeasurementNode * nodebuffer, size_t & count,
-                  unsigned int timeout = DEFAULT_TIMEOUT);
+    grabScanData(SelidarMeasurementNode * nodebuffer, size_t & count,
+                 unsigned int timeout = DEFAULT_TIMEOUT);
 
   protected:
     int
-    sendCommand (unsigned char cmd);
+    sendCommand(unsigned char cmd);
     void
-    disableDataGrabbing ();
+    disableDataGrabbing();
     int
-    waitResponseHeader (SelidarPacketHead* header, unsigned int timeout =
+    waitResponseHeader(SelidarPacketHead* header, unsigned int timeout =
     DEFAULT_TIMEOUT);
 
     int
-    waitScanData (unsigned short& angle_range, SelidarMeasurementNode* nodes,
-                  size_t& node_count, unsigned int timeout = DEFAULT_TIMEOUT);
+    waitScanData(unsigned short& angle_range, SelidarMeasurementNode* nodes,
+                 size_t& node_count, unsigned int timeout = DEFAULT_TIMEOUT);
 
     int
-    cacheScanData ();
+    cacheScanData();
 
     bool connected;
     bool scanning;

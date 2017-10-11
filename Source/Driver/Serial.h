@@ -7,68 +7,70 @@
 
 namespace NS_Selidar
 {
-  
+
   class Serial
   {
   public:
-    
+
     enum
     {
-      ANS_OK = 0, ANS_TIMEOUT = -1, ANS_DEV_ERR = -2,
+      ANS_OK = 0,
+      ANS_TIMEOUT = -1,
+      ANS_DEV_ERR = -2,
     };
 
     enum
     {
-      SERIAL_RX_BUFFER_SIZE = 512, SERIAL_TX_BUFFER_SIZE = 128,
+      SERIAL_RX_BUFFER_SIZE = 512,
+      SERIAL_TX_BUFFER_SIZE = 128,
     };
 
-    Serial ();
-    ~Serial ();
+    Serial();
+    ~Serial();
     bool
-    bind (const char * portname, unsigned int baudrate, unsigned int flags = 0);
+    bind(const char * portname, unsigned int baudrate, unsigned int flags = 0);
     bool
-    open ();
+    open();
     void
-    close ();
+    close();
     void
-    flush (unsigned int flags);
+    flush(unsigned int flags);
 
     int
-    waitfordata (size_t data_count, unsigned int timeout = -1,
-                 size_t * returned_size = NULL);
+    waitfordata(size_t data_count, unsigned int timeout = -1,
+                size_t * returned_size = NULL);
 
     int
-    senddata (const unsigned char * data, size_t size);
+    senddata(const unsigned char * data, size_t size);
     int
-    recvdata (unsigned char * data, size_t size);
+    recvdata(unsigned char * data, size_t size);
 
     int
-    waitforsent (unsigned int timeout = -1, size_t * returned_size = NULL);
+    waitforsent(unsigned int timeout = -1, size_t * returned_size = NULL);
     int
-    waitforrecv (unsigned int timeout = -1, size_t * returned_size = NULL);
+    waitforrecv(unsigned int timeout = -1, size_t * returned_size = NULL);
 
     size_t
-    rxqueue_count ();
+    rxqueue_count();
 
     void
-    setDTR ();
+    setDTR();
     void
-    clearDTR ();
+    clearDTR();
 
-    bool
-    isOpened ()
+    bool isOpened()
     {
       return _is_serial_opened;
     }
-    
+
     unsigned int
-    getTermBaudBitmap (unsigned int baud);
+    getTermBaudBitmap(unsigned int baud);
 
   private:
     bool
-    open (const char * portname, unsigned int baudrate, unsigned int flags = 0);
+    open(const char * portname, unsigned int baudrate, unsigned int flags = 0);
     void
-    _init ();
+    _init();
 
     bool _is_serial_opened;
 
