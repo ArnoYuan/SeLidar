@@ -333,7 +333,7 @@ namespace NS_Selidar
 
               for(j = 0; j < angle_compensate_multiple; j++)
               {
-                angle_compensate_nodes[angle_value - angle_compensate_offset + j] = nodes[i];
+                angle_compensate_nodes[angle_value - angle_compensate_offset + j] = nodes_pub[i];
               }
             }
           }
