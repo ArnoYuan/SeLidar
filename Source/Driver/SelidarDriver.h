@@ -45,7 +45,8 @@ namespace NS_Selidar
     int
     grabScanData(SelidarMeasurementNode * nodebuffer, size_t & count,
                  unsigned int timeout = DEFAULT_TIMEOUT);
-
+    void acsendScanData(SelidarMeasurementNode * nodebuffer,
+    			size_t & count)
   protected:
     int
     sendCommand(unsigned char cmd);

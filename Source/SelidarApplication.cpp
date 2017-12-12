@@ -31,6 +31,7 @@ namespace NS_Selidar
     scan_count = 0;
     scan_timeout = 3;
     inverted = false;
+    angle_compensate = true;
   }
 
   SelidarApplication::~SelidarApplication()
@@ -58,6 +59,15 @@ namespace NS_Selidar
     else
     {
       inverted = false;
+    }
+
+    if(parameter.getParameter("compensate", 1)==1)
+    {
+    	angle_compensate = true;
+    }
+    else
+    {
+    	angle_compensate = false;
     }
   }
 
@@ -232,147 +242,75 @@ namespace NS_Selidar
     double scan_duration;
 
     const int buffer_size = 360 * 10;
-    SelidarMeasurementNode nodes_buffer[buffer_size];
-    SelidarMeasurementNode nodes_temp[buffer_size];
-    SelidarMeasurementNode nodes_pub[buffer_size];
+    const int pub_nodes_count = 720;
+    const float delta_angle = 0.5f;
+    SelidarMeasurementNode nodes_pub[pub_nodes_count];
     size_t buffered_nodes = 0;
-    memset(nodes_buffer, 0, sizeof(nodes_buffer));
-    memset(nodes_temp, 0, sizeof(nodes_temp));
     memset(nodes_pub, 0, sizeof(nodes_pub));
 
-    while(running)
-    {
-      SelidarMeasurementNode nodes[buffer_size];
-      size_t count = _countof(nodes);
-      start_scan_time = NS_NaviCommon::Time::now();
-      op_result = drv.grabScanData(nodes, count);
-      end_scan_time = NS_NaviCommon::Time::now();
-      scan_duration = (end_scan_time - start_scan_time).toSec() * 1e-3;
+	while (running) {
+		SelidarMeasurementNode nodes[buffer_size];
+		size_t count = _countof(nodes);
+		start_scan_time = NS_NaviCommon::Time::now();
+		op_result = drv.grabScanData(nodes, count);
+		end_scan_time = NS_NaviCommon::Time::now();
+		scan_duration = (end_scan_time - start_scan_time).toSec() * 1e-3;
 
-      if(op_result == Success)
-      {
-        if((buffered_nodes + count) > buffer_size)
-        {
-          console.warning("Lidar buffer is full!");
-          buffered_nodes = 0;
-          continue;
-        }
+		if (op_result == Success) {
+			float angle_min = 0;
+			float angle_max = 0;
 
-        for(int i = 0; i < count; i++)
-        {
-          nodes_buffer[buffered_nodes] = nodes[i];
-          if(nodes_buffer[buffered_nodes].angle_scale_100 >= 36000)
-            nodes_buffer[buffered_nodes].angle_scale_100 -= 36000;
-          buffered_nodes++;
-        }
+			drv->acsendScanData(nodes, count);
 
-        int pub_nodes_count = 0;
+			if (angle_compensate) {
+				angle_min = DEG2RAD(0.0f);
+				angle_max = DEG2RAD(359.0f);
+				memset(nodes_pub, 0, sizeof(nodes_pub));
+				int i = 0;
+				for (; i < count; i++) {
+					if (nodes[i].distance_scale_1000 != 0) {
+						float angle =
+								(float) (nodes[i].angle_scale_100 / 100.0f);
+						int pos = (int) (angle / delta_angle);
+						float angle_pre = angle - pos * delta_angle;
+						float angle_next = (pos + 1) * delta_angle - angle;
+						if (angle_pre < angle_next) {
+							if (pos < pub_nodes_count) {
+								nodes_pub[pos] = nodes[i];
+							} else {
+								if (pos < pub_nodes_count - 1) {
+									nodes_pub[pos + 1] = nodes[i];
+								}
+							}
+						}
+					}
+				}
+				publishScan(nodes_pub, pub_nodes_count, start_scan_time,
+						scan_duration, angle_min, angle_max);
+			} else {
+				int start_node = 0;
+				int end_node = 0;
+				int i = 0;
+				int pub_nodes_count = 0;
+				while (nodes[i++].distance_scale_1000 != 0 && i < count)
+					;
+				start_node = i - 1;
+				angle_min =
+						(float) (nodes[start_node].angle_scale_100 / 100.0f);
+				angle_max = (float) (nodes[end_node - 1].angle_scale_100
+						/ 100.0f);
+				pub_nodes_count = end_node - start_node;
+				memcpy(nodes_pub, &nodes[start_node],
+						pub_nodes_count * sizeof(SelidarMeasurementNode));
+				angle_min = DEG2RAD(angle_min);
+				angle_max = DEG2RAD(angle_max);
+				publishScan(&scan_pub, nodes_pub, start_scan_time,
+						scan_duration, angle_min, angle_max);
 
-        for(int i = 0; i < buffered_nodes; i++)
-        {
-          if(i > 0 && nodes_buffer[i].angle_scale_100 < nodes_buffer[i - 1].angle_scale_100)
-          {
-            pub_nodes_count = i;
-            //copy publish nodes
-            for(int j = 0; j < pub_nodes_count; j++)
-            {
-              nodes_pub[j] = nodes_buffer[j];
-            }
+			}
 
-            //re-serialize,save temp
-            for(int j = 0; j < buffered_nodes; j++)
-            {
-              nodes_temp[j] = nodes_buffer[pub_nodes_count + j];
-            }
-
-            //save to buffer
-            buffered_nodes -= pub_nodes_count;
-            for(int j = 0; j < buffered_nodes; j++)
-            {
-              nodes_buffer[j] = nodes_temp[j];
-            }
-
-            break;
-          }
-        }
-        /*
-         if (pub_nodes_count > 0)
-         {
-
-         float angle_min = (nodes_pub[0].angle_scale_100 % 36000) / 100.0f;
-         float angle_max = (nodes_pub[pub_nodes_count - 1].angle_scale_100 % 36000) / 100.0f;
-
-
-         angle_min = DEG2RAD(angle_min);
-         angle_max = DEG2RAD(angle_max);
-
-         publishScan (nodes_pub, pub_nodes_count, start_scan_time, scan_duration, angle_min, angle_max);
-         }
-         */
-        if(pub_nodes_count > 0)
-        {
-          float angle_min = DEG2RAD(0.0f);
-          float angle_max = DEG2RAD(359.0f);
-
-          const int angle_compensate_nodes_count = 360;
-          const int angle_compensate_multiple = 1;
-          int angle_compensate_offset = 0;
-          SelidarMeasurementNode angle_compensate_nodes[angle_compensate_nodes_count];
-          memset(angle_compensate_nodes, 0,
-                 angle_compensate_nodes_count * sizeof(SelidarMeasurementNode));
-
-          int i, j;
-          for(i = 0; i < pub_nodes_count; i++)
-          {
-            if(nodes_pub[i].distance_scale_1000 != 0)
-            {
-              float angle = (float)(nodes_pub[i].angle_scale_100) / 100.0f;
-              int angle_value = (int)(angle * angle_compensate_multiple);
-              if((angle_value - angle_compensate_offset) < 0)
-                angle_compensate_offset = angle_value;
-
-              for(j = 0; j < angle_compensate_multiple; j++)
-              {
-                angle_compensate_nodes[angle_value - angle_compensate_offset + j] = nodes_pub[i];
-              }
-            }
-          }
-          publishScan(angle_compensate_nodes, angle_compensate_nodes_count,
-                      start_scan_time, scan_duration, angle_min, angle_max);
-        }
-
-        /*
-         float angle_min = DEG2RAD(0.0f);
-         float angle_max = DEG2RAD(359.0f);
-         
-         const int angle_compensate_nodes_count = 360;
-         const int angle_compensate_multiple = 1;
-         int angle_compensate_offset = 0;
-         SelidarMeasurementNode angle_compensate_nodes[angle_compensate_nodes_count];
-         memset (angle_compensate_nodes, 0, angle_compensate_nodes_count * sizeof(SelidarMeasurementNode));
-
-         int i, j;
-         for (i = 0; i < count; i++)
-         {
-         if (nodes[i].distance_scale_1000 != 0)
-         {
-         float angle = (float) (nodes[i].angle_scale_100) / 100.0f;
-         int angle_value = (int) (angle * angle_compensate_multiple);
-         if ((angle_value - angle_compensate_offset) < 0)
-         angle_compensate_offset = angle_value;
-
-         for (j = 0; j < angle_compensate_multiple; j++)
-         {
-         angle_compensate_nodes[angle_value - angle_compensate_offset + j] = nodes[i];
-         }
-         }
-         }
-         publishScan (angle_compensate_nodes, angle_compensate_nodes_count,
-         start_scan_time, scan_duration, angle_min, angle_max);
-         */
-
-      }
-    }
+		}
+	}
   }
 
   void SelidarApplication::run()

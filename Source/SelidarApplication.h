@@ -36,6 +36,7 @@ namespace NS_Selidar
     std::string frame_id;
     int scan_timeout;
     bool inverted;
+    bool angle_compensate;
 
     SelidarDriver drv;
     boost::thread scan_thread;
