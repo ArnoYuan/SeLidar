@@ -52,15 +52,15 @@ namespace NS_Selidar
     void
     disableDataGrabbing();
     int
-    waitResponseHeader(SelidarPacketHead* header, unsigned int timeout =
+    waitResponseHeader (SelidarPacketHead* header, unsigned int timeout =
     DEFAULT_TIMEOUT);
 
     int
-    waitScanData(unsigned short& angle_range, SelidarMeasurementNode* nodes,
-                 size_t& node_count, unsigned int timeout = DEFAULT_TIMEOUT);
+    waitScanData (unsigned short& flag, SelidarMeasurementNode* nodes,
+                  size_t& node_count, unsigned int timeout = DEFAULT_TIMEOUT);
 
     int
-    cacheScanData();
+    cacheScanData ();
 
     bool connected;
     bool scanning;
