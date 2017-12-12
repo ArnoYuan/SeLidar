@@ -304,8 +304,8 @@ namespace NS_Selidar
 						pub_nodes_count * sizeof(SelidarMeasurementNode));
 				angle_min = DEG2RAD(angle_min);
 				angle_max = DEG2RAD(angle_max);
-				publishScan(nodes_pub, start_scan_time,
-						scan_duration, angle_min, angle_max);
+				publishScan(nodes_pub, pub_nodes_count, start_scan_time,
+										scan_duration, angle_min, angle_max);
 
 			}
 
