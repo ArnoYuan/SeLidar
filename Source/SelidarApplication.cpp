@@ -260,7 +260,7 @@ namespace NS_Selidar
 			float angle_min = 0;
 			float angle_max = 0;
 
-			drv->acsendScanData(nodes, count);
+			drv.acsendScanData(nodes, count);
 
 			if (angle_compensate) {
 				angle_min = DEG2RAD(0.0f);
@@ -304,7 +304,7 @@ namespace NS_Selidar
 						pub_nodes_count * sizeof(SelidarMeasurementNode));
 				angle_min = DEG2RAD(angle_min);
 				angle_max = DEG2RAD(angle_max);
-				publishScan(&scan_pub, nodes_pub, start_scan_time,
+				publishScan(nodes_pub, start_scan_time,
 						scan_duration, angle_min, angle_max);
 
 			}
