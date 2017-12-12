@@ -245,7 +245,6 @@ namespace NS_Selidar
     const int pub_nodes_count = 720;
     const float delta_angle = 0.5f;
     SelidarMeasurementNode nodes_pub[pub_nodes_count];
-    size_t buffered_nodes = 0;
     memset(nodes_pub, 0, sizeof(nodes_pub));
 
 	while (running) {
