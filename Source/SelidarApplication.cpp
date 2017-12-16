@@ -197,27 +197,42 @@ namespace NS_Selidar
 
     bool reverse_data = (!inverted && reversed) || (inverted && !reversed);
 
-    if(!reverse_data)
-    {
-      for(size_t i = 0; i < node_count; i++)
-      {
-        float read_value = (float)nodes[i].distance_scale_1000 / 1000.0f;
-        if(read_value == 0.0)
-          scan_msg.ranges[i] = std::numeric_limits< float >::infinity();
-        else
-          scan_msg.ranges[i] = read_value;
-      }
-    }
-    else
-    {
-      for(size_t i = 0; i < node_count; i++)
-      {
-        float read_value = (float)nodes[i].distance_scale_1000 / 1000.0f;
-        if(read_value == 0.0)
-          scan_msg.ranges[node_count - 1 - i] = std::numeric_limits< float >::infinity();
-        else
-          scan_msg.ranges[node_count - 1 - i] = read_value;
-      }
+    if (!reverse_data) {
+        for (size_t i = 0; i < node_count; i++) {
+            float read_value = (float) nodes[i].distance_scale_1000 / 1000.0f;
+			if(i<node_count/2)
+			{
+				if (read_value == 0.0)
+                	scan_msg.ranges[node_count/2-1+i] = std::numeric_limits<float>::infinity();
+            	else
+                	scan_msg.ranges[node_count/2-1+i] = read_value;
+			}
+			else
+			{
+				if(read_value == 0.0)
+					scan_msg.ranges[(i-node_count/2)] = std::numeric_limits<float>::infinity();
+				else
+					scan_msg.ranges[(i-node_count/2)] = read_value;
+			}
+        }
+    } else {
+        for (size_t i = 0; i < node_count; i++) {
+            float read_value = (float) nodes[i].distance_scale_1000 / 1000.0f;
+			if(i<node_count/2)
+			{
+				if (read_value == 0.0)
+                	scan_msg.ranges[node_count/2-1-i] = std::numeric_limits<float>::infinity();
+            	else
+                	scan_msg.ranges[node_count/2-1-i] = read_value;
+			}
+			else
+			{
+				if(read_value == 0.0)
+					scan_msg.ranges[node_count-1-(i-node_count/2)] = std::numeric_limits<float>::infinity();
+				else
+					scan_msg.ranges[node_count-1-(i-node_count/2)] = read_value;
+			}
+        }
     }
 
     /*
@@ -268,8 +283,7 @@ namespace NS_Selidar
 				int i = 0;
 				for (; i < count; i++) {
 					if (nodes[i].distance_scale_1000 != 0) {
-						float angle =
-								(float) (nodes[i].angle_scale_100 / 100.0f);
+						float angle = (float) (nodes[i].angle_scale_100 / 100.0f);
 						int pos = (int) (angle / delta_angle);
 						float angle_pre = angle - pos * delta_angle;
 						float angle_next = (pos + 1) * delta_angle - angle;
@@ -298,7 +312,7 @@ namespace NS_Selidar
 						(float) (nodes[start_node].angle_scale_100 / 100.0f);
 				angle_max = (float) (nodes[end_node - 1].angle_scale_100
 						/ 100.0f);
-				pub_nodes_count = end_node - start_node;
+				pub_nodes_count = end_node - start_node+1;
 				memcpy(nodes_pub, &nodes[start_node],
 						pub_nodes_count * sizeof(SelidarMeasurementNode));
 				angle_min = DEG2RAD(angle_min);
