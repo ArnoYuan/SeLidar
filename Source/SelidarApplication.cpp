@@ -11,6 +11,10 @@
 #include <assert.h>
 #include <Time/Utils.h>
 #include <Parameter/Parameter.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 namespace NS_Selidar
 {
@@ -275,7 +279,19 @@ namespace NS_Selidar
 			float angle_max = 0;
 
 			drv.acsendScanData(nodes, count);
-
+			int ret = 0;
+			char buf[128];
+			if(log_count<500)
+			{
+				for(int i=0;i<count;i++)
+				{
+					ret = sprintf(buf, "(%f,%f) ", nodes[i].angle_scale_100*1.0f/100, nodes[i].distance_scale_1000*1.0f/1000);
+					write(log_fd, buf, ret);
+				}
+				ret = sprintf(buf, "\r\n");
+				write(log_fd, buf, ret);
+				log_count ++;
+			}
 			if (angle_compensate) {
 				angle_min = DEG2RAD(0.0f);
 				angle_max = DEG2RAD(359.0f);
@@ -364,7 +380,8 @@ namespace NS_Selidar
 #endif
 
     running = true;
-
+    log_count = 0;
+    log_fd = open("/root/lidar_log.txt", O_RDWR|O_CREAT);
     scan_thread = boost::thread(
         boost::bind(&SelidarApplication::scanLoop, this));
 
@@ -395,7 +412,7 @@ namespace NS_Selidar
 #ifdef DUPLEX_MODE
     drv.stop ();
 #endif
-
+    close(log_fd);
     running = false;
 
     scan_thread.join();

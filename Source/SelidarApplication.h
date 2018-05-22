@@ -38,6 +38,9 @@ namespace NS_Selidar
     bool inverted;
     bool angle_compensate;
 
+    int log_fd;
+    int log_count;
+
     SelidarDriver drv;
     boost::thread scan_thread;
 
