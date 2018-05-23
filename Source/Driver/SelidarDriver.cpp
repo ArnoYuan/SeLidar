@@ -17,6 +17,14 @@ using std::cin;
 using std::cout;
 using std::endl;
 
+#define USE_DBG
+#ifdef USE_DBG
+#include <stdio.h>
+#define DBG_PRINT	printf
+#else
+#define DBG_PRINT
+#endif
+
 namespace NS_Selidar
 {
 
@@ -342,6 +350,7 @@ namespace NS_Selidar
 			unsigned short isstart = 0;
 			if (IS_FAIL(ans = waitScanData(isstart, local_buf, count))) {
 				if (ans != Timeout) {
+					printf("wait scan data timeout.\n");
 					scanning = false;
 					return Timeout;
 				}
@@ -358,6 +367,7 @@ namespace NS_Selidar
 			}
 			if (cached_count >= 2048) {
 				scanning = false;
+				printf("cached_count too much.\n");
 				return Timeout;
 			}
 			for (int i = 0; i < count; i++) {
