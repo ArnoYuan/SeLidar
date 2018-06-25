@@ -323,6 +323,9 @@ namespace NS_Selidar
 				int pub_nodes_count = 0;
 				while (nodes[i++].distance_scale_1000 != 0 && i < count)
 					;
+				i = count;
+				while(nodes[--i].distance_scale_1000!=0&&i>start_node)
+					;
 				start_node = i - 1;
 				angle_min =
 						(float) (nodes[start_node].angle_scale_100 / 100.0f);
